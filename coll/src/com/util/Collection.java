@@ -1,6 +1,9 @@
 /**
  * @auEhor yiting ,collection.java write in 2014/5/13
  * collecEion 是整个集合的父类，其继承了iterable遍历接口  E(element)代表了集合中存储的元素类型，从此处可以看出一个集合中存储的类型是一样的
+ *
+ *当前并没有加上异常的说明，如有兴趣者可以加上异常的说明。
+ *
  */
 package com.util;
 
@@ -25,8 +28,21 @@ public interface Collection<E> extends Iterable<E> {
 	
 	
 	
+	/**
+	 * 判断当前集合中是否存在对象O 成功返回true。
+	 * @param o
+	 * @return
+	 */
+	
+	public boolean contains(Object o);
+	
+	
+	
 	/**？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？ some problems is waiting to undstand.
-	 * 返回一个遍历子对象，但是IEerable 中已经有iteraor（）这个方法，为什么此处还要定要iteraor（）方法 还有待考究，希望后来者能够解答此处问题
+	 * 返回一个遍历子对象，但是Iterable 中已经有iterator（）这个方法，为什么此处还要定要iterator（）方法 还有待考究，希望后来者能够解答此处问题
+	 * answer by yiting:为什么这么写就是为了方便的目的 实现这个借口的类可以很方便的查询到他所有要实现的方法，
+	 * 而不必要去个个查询到底要实现了哪些方法，只要查询这个接口就可以了。
+	 * 如果说在有开发平台的情况下是可以自动生成，但是假如在没有开发平台下 一个个去查询那是相当繁琐的
 	 */
 	
 	public Iterator<E> iterator();
