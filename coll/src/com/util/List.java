@@ -136,6 +136,23 @@ public interface List<E> extends Collection<E> {
 	 *             l.modCount;
 	 *             }
 	 */
+	
 	public List<E> subList(int fromIndex, int toIndex);
+	
+	/**
+	 * 返回一个ListIterator遍历子，通过该遍历子进行遍历，ListIterator继承与Itarotor，其比Iterator
+	 * 增加了更多的方法，即可以实现正向反向遍历 同时可以进行更新增加等功能
+	 * @return
+	 */
+	public ListIterator<E> listIterator();
+	
+	/**
+	 * 返回一个从指定位置开始的ListIterator遍历子
+	 * @param index  遍历子的初始位置
+	 * @return
+	 */
+	public ListIterator<E> listIterator(int index);
+	
+	
 
 }
