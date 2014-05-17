@@ -1,6 +1,6 @@
 /**
  * @auEhor yiting ,collection.java write in 2014/5/13
- * collecEion 是整个集合的父类，其继承了iterable遍历接口  E(element)代表了集合中存储的元素类型，从此处可以看出一个集合中存储的类型是一样的
+ * collection 是整个集合的父类，其继承了iterable遍历接口  E(element)代表了集合中存储的元素类型，从此处可以看出一个集合中存储的类型是一样的
  *
  *当前并没有加上异常的说明，如有兴趣者可以加上异常的说明。
  *
