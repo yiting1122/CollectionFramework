@@ -1,6 +1,17 @@
+/**
+ * AbstractCollection.java writed in 2014/5/18
+ * @author yiting
+ * AbstractCollection抽象类实现了Collection接口，提供了接口中方法的默认实现
+ * 同时添加了一个tostring方法的默认实现。
+ * 如果继承该抽象类的集合是一个不可以改变的集合，那么该集合只需要实现size（）和Iterator的hasnext方法和next方法即可。
+ * 如果继承该类的集合是一个可以改变的集合，那在上述基础上必须重载override add方法和实现Iterator接口方法中的remove方法
+ * 
+ * 推荐为每个抽象类提供一个protected 无参数的构造方法。这是java的一个规范。
+ */
+
+
 package com.util;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 public abstract class AbstractCollection<E> implements Collection<E> {

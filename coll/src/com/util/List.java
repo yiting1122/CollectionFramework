@@ -59,6 +59,7 @@ public interface List<E> extends Collection<E> {
 	 * @throws ClassCastException ,当该插入元素的类型并不能转化为E类型时候抛出异常
 	 * @throws IndexOutOfBoundsException 当index超出了范围
 	 * @throws NullPointerException 当element为null时，而当前集合不容许插入null的时候
+	 * @throws IndexOutOfBoundsException    
 	 */
 
 	public E set(int index, E element);
@@ -99,7 +100,7 @@ public interface List<E> extends Collection<E> {
 	 * 返回与该对象O相等的最后一个位置，集合中可能存在多个相同值
 	 * 
 	 * @param o 指定对象
-	 * @return 返回position，如果list集合中没有该元素则返回-1；
+	 * @return 返回position，如果list集合中没有该元素则返回-1，那么可以采取从后往前找到第一个就行
 	 * @throws ClassCastException 当前对象不能转化为E类型的对象
 	 * @throws NullPointerException 当前对象o=null，而集合中是不容许出现null元素 抛出异常
 	 */
