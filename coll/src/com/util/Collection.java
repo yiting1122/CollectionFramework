@@ -32,6 +32,8 @@ public interface Collection<E> extends Iterable<E> {
 	 * 判断当前集合中是否存在对象O 成功返回true。
 	 * @param o
 	 * @return
+     * @throws ClassCastException   {@inheritDoc}
+     * @throws NullPointerException {@inheritDoc}
 	 */
 	
 	public boolean contains(Object o);
@@ -75,7 +77,7 @@ public interface Collection<E> extends Iterable<E> {
 	 * @return a；
 	 */
 	
-	public E[] toArry(E a[]);
+	public <T> T[] toArry(T a[]);
 	
 	
 	
