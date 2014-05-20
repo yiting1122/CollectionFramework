@@ -2,6 +2,7 @@ package com.util;
 
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 
 public abstract class AbstractList<E> extends AbstractCollection<E> implements List<E> {
 	
@@ -292,16 +293,236 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 		}
 	}
 	
+	
+
+	
 	private void rangeCheckForAdd(int index){
 		if(index>size()||index<0){
 			throw new IndexOutOfBoundsException("outOfBoundsException "+index);
 		}
 	}
 	
-//	public  List<E> subList (int fromIndex,int toIndex){
-//		return (this instanceof Rand)
-//		
-//	}
+	public  List<E> subList (int fromIndex,int toIndex){
+		return (this instanceof RandomAccess?new RandomAccessSubList<E>(this, fromIndex, toIndex):
+			new SubList<E>(this, fromIndex, toIndex));
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+}
+
+/**
+ * 求子list，该子list依赖与原来的list，
+ * @author yiting
+ *
+ * @param <E>
+ */
+class SubList<E> extends AbstractList<E>{
+	private final AbstractList<E> l;
+	private final int offset;
+	private int size;
+	public SubList(AbstractList<E> list,int fromIndex,int toIndex){
+		if(fromIndex<0||fromIndex>list.size()){
+			throw  new IndexOutOfBoundsException("fromIndex <0 or fromIndex>list.size()");
+		}
+		if(toIndex<0||toIndex>list.size()){
+			throw new IndexOutOfBoundsException("toIndex<0 or toIndex>list.size()");
+		}
+		if(toIndex<fromIndex){
+			throw new IndexOutOfBoundsException("toIndex < fromIndex");
+		}
+		this.l=list;
+		this.offset=fromIndex;
+		this.size=toIndex-fromIndex;
+		this.modCount=l.modCount;
+	}
+	@Override
+	public void add(int index, E element) {
+		rangeCheckForAdd(index);
+        checkForComodification();
+        l.add(index+offset, element);
+        this.modCount = l.modCount;
+        size++;
+		
+	}
+	@Override
+	public List<E> subList(int fromIndex, int toIndex) {
+		// TODO Auto-generated method stub
+		return new SubList<E>(this, fromIndex, toIndex);
+	}
+	@Override
+	public E get(int index) {
+		// TODO Auto-generated method stub
+		 rangeCheck(index);
+	     checkForComodification();
+	     return l.get(index+offset);
+	}
+	@Override
+	public E set(int index, E element) {
+		rangeCheck(index);
+		checkForComodification();
+		return l.set(index+offset, element);
+	}
+	/**
+	 * 通过modecount保证每次的操作都是在一个状态下的操作
+	 * @param index
+	 * @return
+	 */
+	@Override
+	public E remove(int index) {
+		rangeCheck(index);
+		checkForComodification();
+		E result=l.remove(index+offset);
+		this.modCount=l.modCount;
+		size--;
+		return result;
+	}
+	@Override
+	public boolean addAll(int index, Collection<? extends E> c) {
+		// TODO Auto-generated method stub
+		rangeCheck(index);
+		//jdk 直接采用的c.size()但是如果c为null的时候是否会报异常呢？ 感觉如果c==null；是不能用c.size（）的，后面可以测试
+		int cSize=c.size();
+		if(cSize==0){
+			return false;
+		}
+		checkForComodification();
+		l.addAll(index+offset, c);
+		size+=cSize;
+		return true;
+	}
+	
+	@Override
+	public Iterator<E> iterator(){
+		return listIterator();
+	}
+	
+	
+	@Override
+	public ListIterator<E> listIterator(final int index) {
+		// TODO Auto-generated method stub
+		checkForComodification();
+		rangeCheckForAdd(index);
+		return new ListIterator<E>() {
+			private final ListIterator<E> i=l.listIterator(index+offset);
+			@Override
+			public boolean hasNext() {
+				// TODO Auto-generated method stub
+				return nextIndex()<size;
+			}
+
+			@Override
+			public E next() {
+				// TODO Auto-generated method stub
+				if(hasNext()){
+					return i.next();
+				}else{
+					throw new NoSuchElementException();
+				}
+			}
+
+			@Override
+			public void remove() {
+				i.remove();
+				SubList.this.modCount=l.modCount;
+				size--;
+				
+			}
+
+			@Override
+			public boolean hasPrevious() {
+				// TODO Auto-generated method stub
+				return previousIndex()>0;
+			}
+
+			@Override
+			public int previousIndex() {
+				// TODO Auto-generated method stub
+				return i.previousIndex()-offset;
+			}
+
+			@Override
+			public E previous() {
+				// TODO Auto-generated method stub
+				if(hasPrevious()){
+					return i.previous();
+				}else {
+					throw new NoSuchElementException();
+				}
+			}
+
+			@Override
+			public int nextIndex() {
+				// TODO Auto-generated method stub
+				return i.nextIndex()-offset;
+			}
+
+			@Override
+			public void set(E e) {
+				// TODO Auto-generated method stub
+				i.set(e);
+			}
+
+			@Override
+			public void add(E e) {
+				// TODO Auto-generated method stub
+				i.add(e);
+				SubList.this.modCount=l.modCount;
+				size++;
+			}
+		};
+
+	}
+	@Override
+	protected void removeRange(int fromIndex, int toIndex) {
+		// TODO Auto-generated method stub
+		 checkForComodification();
+	        l.removeRange(fromIndex+offset, toIndex+offset);
+	        this.modCount = l.modCount;
+	        size -= (toIndex-fromIndex);
+	}
+	@Override
+	public int size() {
+		// TODO Auto-generated method stub
+		checkForComodification();
+		return size;
+	}
+	
+	 private void rangeCheck(int index) {
+	        if (index < 0 || index >= size)
+	            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+	    }
+	 private String outOfBoundsMsg(int index) {
+	        return "Index: "+index+", Size: "+size;
+	    }
+
+	 private void checkForComodification() {
+	        if (this.modCount != l.modCount)
+	            throw new ConcurrentModificationException();
+	    }
+	 private void rangeCheckForAdd(int index) {
+	        if (index < 0 || index > size)
+	            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+	    }
+
+}
+
+class RandomAccessSubList<E> extends SubList<E> implements RandomAccess{
+
+	public RandomAccessSubList(AbstractList<E> list, int fromIndex,
+			int toIndex) {
+		super(list, fromIndex, toIndex);
+		// TODO Auto-generated constructor stub
+	}
+
+
+
+
 	
 	
 }
