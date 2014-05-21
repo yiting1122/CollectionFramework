@@ -235,7 +235,9 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 			// TODO Auto-generated method stub
 			return cursor;
 		}
-
+        /**
+         * 遍历方向向前
+         */
 		@Override
 		public E previous() {
 			// TODO Auto-generated method stub
@@ -252,7 +254,9 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 		}
 
 		
-
+        /**
+         * 更新一个对象
+         */
 		@Override
 		public void set(E e) {
 			if(lastRet<0){
@@ -306,7 +310,10 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 	}
 	
 	
-
+/**
+ * 判断index是否超出范围
+ * @param index
+ */
 	
 	private void rangeCheckForAdd(int index){
 		if(index>size()||index<0){
@@ -314,6 +321,10 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 		}
 	}
 	
+	/**
+	 * 其实最终都是调用的return  new SubList<E>(this, fromIndex, toIndex)
+	 * 只不过有的list实现了随机存取，则可以用RandomAccessSubList<E>
+	 */
 	public  List<E> subList (int fromIndex,int toIndex){
 		return (this instanceof RandomAccess?new RandomAccessSubList<E>(this, fromIndex, toIndex):
 			new SubList<E>(this, fromIndex, toIndex));
@@ -551,6 +562,7 @@ class SubList<E> extends AbstractList<E>{
 	        if (index < 0 || index > size)
 	            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	    }
+
 
 }
 

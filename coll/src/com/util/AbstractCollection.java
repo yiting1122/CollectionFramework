@@ -88,7 +88,7 @@ public abstract class AbstractCollection<E> implements Collection<E> {
 
 
 	@Override
-	public <T> T[] toArry(T[] a) {
+	public <T> T[] toArray(T[] a) {
 		// TODO Auto-generated method stub
 		int size=size();
 		T[] r=a.length>size?a:(T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);

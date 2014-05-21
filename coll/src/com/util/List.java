@@ -19,7 +19,7 @@ public interface List<E> extends Collection<E> {
 
 	public Object[] toArray();
 
-	public <T> T[] toArry(T a[]);
+	public <T> T[] toArray(T a[]);
 
 	public boolean add(E e);
 

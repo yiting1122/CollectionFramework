@@ -77,7 +77,7 @@ public interface Collection<E> extends Iterable<E> {
 	 * @return a£»
 	 */
 	
-	public <T> T[] toArry(T a[]);
+	public <T> T[] toArray(T a[]);
 	
 	
 	
