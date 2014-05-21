@@ -1,3 +1,15 @@
+/**
+ * write in 2014/5/21
+ * @author yiting
+ * AbstractList class 是List的一个抽象实现，里面已经实现了大部分的函数，同时在该内中以实现了两个内部类遍历子接口，Itr和ListItr。
+ * 内部内相当于该类的一个函数，所以其可以访问该类的成员方法和变量
+ * 以及子链表SubList，该子List并不是返回另外一个list对象，而是跟list操作同个集合，通过offest偏移来进行操作。
+ * AbstratList的实现着只要重写get size set remove 函数即可。
+ * 如果是不可变集合则只要实现get size方法
+ */
+
+
+
 package com.util;
 
 import java.util.ConcurrentModificationException;
@@ -308,9 +320,38 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 		
 	}
 	
+	@Override
+	public boolean equals(Object o){
+		if(o==this){
+			return true;
+		}
+		if(!(o instanceof List)){
+			return false;
+		}
+		ListIterator<E> e1=listIterator();
+		ListIterator e2=((List)o).listIterator();
+		while(e1.hasNext()&&e2.hasNext()){
+			E o1=e1.next();
+			Object o2=e2.next();
+			if(!(o1==null?o2==null:o1.equals(o2))){
+				return false;
+			}
+		}
+		return !(e1.hasNext()||e2.hasNext());
+	}
 	
 	
-	
+	/**
+	 * hashcode 不会出现溢出？？？？？
+	 */
+	@Override
+	public int hashCode(){
+		int hashCode=1;
+		for(E e:this){
+			hashCode=31*hashCode+(e==null?0:e.hashCode());
+		}
+		return hashCode;
+	}
 	
 	
 	
@@ -322,6 +363,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
  *
  * @param <E>
  */
+
 class SubList<E> extends AbstractList<E>{
 	private final AbstractList<E> l;
 	private final int offset;
