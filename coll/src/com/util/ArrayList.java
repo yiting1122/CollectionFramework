@@ -86,11 +86,7 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,List<E
 		return size;
 	}
 	
-	@Override
-	public void add(int index, E element) {
-		// TODO Auto-generated method stub
-
-	}
+	
 	
 	@Override
 	public boolean isEmpty(){
@@ -161,6 +157,7 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,List<E
 	}
 	
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T[] toArray(T[] a){
 		if(a.length<size){
@@ -173,9 +170,19 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,List<E
 		return a;
 	}
 	
+	/**
+	 * 包访问权限，只有在同一个包下面的类可以实例化该arraylist对象后调用该函数
+	 * @param index
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	E elementData(int index){
+		return (E)elementData[index];
+	}
+	
 	@Override
 	public E get(int index) {
-		// TODO Auto-generated method stub
+		rangeCheck(index);
 		return (E) elementData[index];
 	}
 
@@ -183,26 +190,125 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,List<E
 
 	@Override
 	public boolean add(E e) {
-		// TODO Auto-generated method stub
-		return super.add(e);
+		ensureCapacity(size+1);
+		elementData[size++]=e;
+		return true;
+	}
+	
+	@Override
+	public void add(int index, E element) {
+		rangeCheckForAdd(index);
+		//把元素往后移动 空出index位置。数组的增加操作
+		System.arraycopy(elementData, index, elementData, index+1, size-index);
+		elementData[index]=element;
+		size++;
 	}
 
 	@Override
 	public E set(int index, E element) {
-		// TODO Auto-generated method stub
-		return super.set(index, element);
+		rangeCheck(index);
+		E oldValue=get(index);
+		elementData[index]=element;
+		return oldValue;
+		
 	}
 
 	@Override
 	public E remove(int index) {
-		// TODO Auto-generated method stub
-		return super.remove(index);
+		rangeCheck(index);
+		modCount++;
+		E oldValue=elementData(index);
+		int numMoved=size-index-1;
+		if(numMoved>0){
+			System.arraycopy(elementData, index+1, elementData, index, numMoved);
+		}
+		elementData[--size]=null;
+		return oldValue;
+	}
+	
+	@Override
+	public boolean remove(Object o){
+		if(o==null){
+			for(int i=0;i<size;i++){
+				if(elementData[i]==null){
+					fastRemove(i);
+					return true;
+				}
+			}
+		}else{
+			for(int i=0;i<size;i++){
+				if(o.equals(elementData[i])){
+					fastRemove(i);
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	
+	private void fastRemove(int index){
+		this.modCount++;
+		int numMoved=size-index-1;
+		if(numMoved>0){
+			System.arraycopy(elementData, index+1, elementData, index, numMoved);
+		}
+		elementData[--size]=null;
+	}
+	
+	
+	public void clear(){
+		modCount++;
+		for(int i=0;i<size;i++){
+			elementData[i]=null;     //通过赋值为null，数组的内存释放交给了GC垃圾回收器
+		}
+		size=0;
+	}
+	
+	
 
+	@Override
+	public boolean addAll(Collection<? extends E> c) {
+		Object[] newValue=c.toArray();
+		int numNew=newValue.length;
+		ensureCapacity(size+numNew);
+		System.arraycopy(newValue, 0, elementData, size, numNew);
+		size+=numNew;
+		return true;
+	}
+
+	@Override
+	public boolean addAll(int index, Collection<? extends E> c) {
+		rangeCheckForAdd(index);
+		Object[] newValue=c.toArray();
+		int numNew=newValue.length;
+		ensureCapacity(size+numNew);
+		System.arraycopy(newValue, 0, elementData, index, numNew);
+		size+=numNew;
+		return true;
+	}
+
+	@Override
+	protected void removeRange(int fromIndex, int toIndex) {
+		// TODO Auto-generated method stub
+		super.removeRange(fromIndex, toIndex);
+	}
+
+	private void rangeCheck(int index){
+		if(index>=size){
+			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+		}
+	}
 	
+	private void rangeCheckForAdd(int index){
+		if(index>size||index<0){
+			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+		}
+	}
 	
+	private String outOfBoundsMsg(int index){
+		return "Index :"+index+", size :"+size;
+	}
 	
 
 }
