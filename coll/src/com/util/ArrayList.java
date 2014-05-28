@@ -1,6 +1,11 @@
 package com.util;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
+import java.util.NoSuchElementException;
 
 
 
@@ -274,7 +279,7 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,List<E
 		ensureCapacity(size+numNew);
 		System.arraycopy(newValue, 0, elementData, size, numNew);
 		size+=numNew;
-		return true;
+		return numNew!=0;
 	}
 
 	@Override
@@ -283,15 +288,127 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,List<E
 		Object[] newValue=c.toArray();
 		int numNew=newValue.length;
 		ensureCapacity(size+numNew);
+		
+		int numMoved=size-index;
+		//把index后面的nummoved个元素往后面挪动numNew个位置
+		if(numMoved>0){
+			System.arraycopy(elementData, index, elementData, index+numNew, numMoved);
+		}
+		//把新的值加入到elementData
 		System.arraycopy(newValue, 0, elementData, index, numNew);
 		size+=numNew;
 		return true;
 	}
 
+	/**
+	 * 把元素从后往前移动，然后把空出来的位置复制为null，这样会触发GC对数组中对象的回收
+	 */
 	@Override
 	protected void removeRange(int fromIndex, int toIndex) {
+		this.modCount++;
+		int numMoved=size-toIndex;
+		System.arraycopy(elementData, toIndex, elementData, fromIndex, numMoved);
+		int newSize=size-(toIndex-fromIndex);
+		
+		while(size!=newSize){
+			elementData[--size]=null;
+		}
+	}
+	
+	@Override
+	public boolean removeAll(Collection<?> c) {
 		// TODO Auto-generated method stub
-		super.removeRange(fromIndex, toIndex);
+		return batchRemove(c, false);
+	}
+
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		// TODO Auto-generated method stub
+		return batchRemove(c, true);
+	}
+	
+	/**
+	 * 批量删除，当complement为true时保持两个集合中相同的对象，为false时，保留
+	 * 当前集合中的元素（该元素也不存在与集合c中）
+	 * @param c
+	 * @param complement
+	 * @return
+	 */
+	
+	private boolean batchRemove(Collection<?> c,boolean complement){
+		final Object[] elementData=this.elementData;
+		int r=0,w=0;
+		boolean modified=false;
+		try{
+			for(;r<size;r++){
+				if(c.contains(elementData[r])==complement){
+					elementData[w++]=elementData[r];
+				}
+			}
+		}finally{
+			//保持兼容性，即使c.contains抛出了异常
+			if(r!=size){
+				//当抛出异常时把后面还没有处理的元素往前移动进行数组的压缩
+				System.arraycopy(elementData, r, elementData, w, size-r);
+			}
+			//w为压缩后的尾端，可能其还没达到size，把最后的元素赋值为null，同时也可以
+			//触发垃圾回收器进行这些对象的回收
+			w+=size-r;
+			if(w!=size){
+				for(int i=w;i<size;i++){
+					elementData[i]=null;
+				}
+				modCount+=size-w;
+				size=w;
+				modified=true;
+			}
+		}
+		return modified;
+	}
+
+	/**
+	 * 通过输出流输出对象，
+	 * 其中一定要区分size和length的区别，size是元素的个数，length是数组的长度
+	 * @param s
+	 * @throws IOException
+	 */
+	private void writeObject(ObjectOutputStream s) throws IOException{
+		int expectedModCount=modCount;
+		s.defaultWriteObject();
+		s.writeInt(elementData.length);
+		
+		for(int i=0;i<size;i++){
+			s.writeObject(elementData[i]);
+		}
+		//写入结束后进行判断，是否有多线程对数组进行了结构性的更改，如果发生了结构性更改
+		//这种写入是有问题的，导致前后不一致，所以必须抛出异常
+		if(modCount!=expectedModCount){
+			throw new ConcurrentModificationException();
+		}
+	}
+	
+	
+	private void readObject(ObjectInputStream s) throws IOException,ClassNotFoundException{
+		s.defaultReadObject();
+		int arrayLength=s.readInt();
+		Object[] a=elementData=new Object[arrayLength];
+		for(int i=0;i<size;i++){
+			a[i]=s.readObject();
+		}
+	}
+	
+	
+	
+	@Override
+	public ListIterator<E> listIterator() {
+		// TODO Auto-generated method stub
+		return listIterator(0);
+	}
+
+	@Override
+	public ListIterator<E> listIterator(int index) {
+		// TODO Auto-generated method stub
+		return new ListItr(index);
 	}
 
 	private void rangeCheck(int index){
@@ -309,6 +426,211 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,List<E
 	private String outOfBoundsMsg(int index){
 		return "Index :"+index+", size :"+size;
 	}
+	
+	
+	private class Itr implements Iterator<E> {
+		int cursor;
+		int lastRet=-1;
+		int expectedModCount=modCount;
+		@Override
+		public boolean hasNext() {
+			return cursor!=size;
+		}
+
+		@Override
+		public E next() {
+			checkForComodification();
+			int i=cursor;
+			if(i>=size){
+				throw new NoSuchElementException();
+			}
+			Object[] elementData=ArrayList.this.elementData;
+			if(i>=elementData.length){
+				throw new ConcurrentModificationException();
+			}
+			cursor=i+1;
+			return (E)elementData[lastRet=i];
+		}
+
+	
+
+		@Override
+		public void remove() {
+			if(lastRet<0){
+				throw new IllegalStateException();
+			}
+			checkForComodification();
+			try {
+				ArrayList.this.remove(lastRet);
+				cursor=lastRet;
+				lastRet=-1;
+			} catch (IndexOutOfBoundsException ex) {
+				throw new ConcurrentModificationException();
+			}
+			
+		}
+		final void checkForComodification() {
+			if(modCount!=expectedModCount){
+				throw new ConcurrentModificationException();
+			}
+			
+		}
+		
+	}
+	
+	
+	private class ListItr extends Itr implements ListIterator<E>{
+
+		
+		public ListItr(int index) {
+			super();
+			cursor=index;
+		}
+		
+		
+		@Override
+		public boolean hasPrevious() {
+			return cursor!=0;
+		}
+
+		@Override
+		public int previousIndex() {
+			return cursor-1;
+		}
+
+		@Override
+		public E previous() {
+			 checkForComodification();
+	            int i = cursor - 1;
+	            if (i < 0)
+	                throw new NoSuchElementException();
+	            Object[] elementData = ArrayList.this.elementData;
+	            if (i >= elementData.length)
+	                throw new ConcurrentModificationException();
+	            cursor = i;
+	            return (E) elementData[lastRet = i];
+		}
+
+		@Override
+		public int nextIndex() {
+			return cursor;
+		}
+
+		@Override
+		public void set(E e) {
+			 if (lastRet < 0)
+	                throw new IllegalStateException();
+	            checkForComodification();
+
+	            try {
+	                ArrayList.this.set(lastRet, e);
+	            } catch (IndexOutOfBoundsException ex) {
+	                throw new ConcurrentModificationException();
+	            }
+		}
+
+		@Override
+		public void add(E e) {
+			   checkForComodification();
+
+	            try {
+	                int i = cursor;
+	                ArrayList.this.add(i, e);
+	                cursor = i + 1;
+	                lastRet = -1;
+	                expectedModCount = modCount;
+	            } catch (IndexOutOfBoundsException ex) {
+	                throw new ConcurrentModificationException();
+	            }
+		}
+		
+	}
+
+
+	@Override
+	public List<E> subList(int fromIndex, int toIndex) {
+		// TODO Auto-generated method stub
+		return super.subList(fromIndex, toIndex);
+	}
+	
+	static void subListRangeCheck(int fromIndex, int toIndex, int size) {
+        if (fromIndex < 0)
+            throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
+        if (toIndex > size)
+            throw new IndexOutOfBoundsException("toIndex = " + toIndex);
+        if (fromIndex > toIndex)
+            throw new IllegalArgumentException("fromIndex(" + fromIndex +
+                                               ") > toIndex(" + toIndex + ")");
+    }
+
+	
+	private class SubList extends AbstractList<E> implements RandomAccess{
+
+		private final AbstractList<E> parent;
+		private final int parentOffest;
+		private final int offest;
+		int size;
+		
+		public SubList(AbstractList<E> parent,int offest,int fromIndex,int toIndex) {
+			this.parent=parent;
+			this.parentOffest=fromIndex;
+			this.offest=offest+fromIndex;
+			this.size=toIndex-fromIndex;
+			this.modCount=ArrayList.this.modCount;
+		}
+		
+		@Override
+		public void add(int index, E element) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public E get(int index) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public int size() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+		
+		
+		
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 
 }

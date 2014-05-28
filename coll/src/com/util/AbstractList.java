@@ -6,6 +6,21 @@
  * 以及子链表SubList，该子List并不是返回另外一个list对象，而是跟list操作同个集合，通过offest偏移来进行操作。
  * AbstratList的实现着只要重写get size set remove 函数即可。
  * 如果是不可变集合则只要实现get size方法
+ * 
+ *  Fail-Fast(快速失败)机制
+ *                    仔细观察上述的各个方法，我们在源码中就会发现一个特别的属性modCount，API解释如下：
+ *                The number of times this list has been structurally modified. Structural modifications are those
+ *                that change the size of the list, or otherwise perturb it in such a fashion that iterations in progress
+ *                may yield incorrect results.
+ *                   记录修改此列表的次数：包括改变列表的结构，改变列表的大小，打乱列表的顺序等使正在进行
+ *              迭代产生错误的结果。Tips:仅仅设置元素的值并不是结构的修改
+ *                  我们知道的是ArrayList是线程不安全的，如果在使用迭代器的过程中有其他的线程修改了List就会
+ *               抛出ConcurrentModificationException这就是Fail-Fast机制。   
+ *                  那么快速失败究竟是个什么意思呢？
+ *              在ArrayList类创建迭代器之后，除非通过迭代器自身remove或add对列表结构进行修改，否则在其他
+ *               线程中以任何形式对列表进行修改，迭代器马上会抛出异常，快速失败。   
+ * 
+ * 
  */
 
 
