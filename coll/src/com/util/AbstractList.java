@@ -165,6 +165,21 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 	 */
 	protected transient int modCount=0;
 	
+	
+	/**
+	 * 这个get/set函数是我添加的 方便于测试，后续可以删除,方便用于输出modCount的值 还不要通过断点，同时可以通过set方法
+	 * 来使得一些函数抛出异常，可以模拟并行环境
+	 * @return
+	 */
+	public int getModCount() {
+		return modCount;
+	}
+
+	public void setModCount(int modCount) {
+		this.modCount = modCount;
+	}
+
+
 	/**
 	 * 从下面可以看出remove必须和next搭配，不然lastRet就为-1；通过lastRet保证了只有在next之后才可以
 	 * 调用remove 不然就是非法操作.同理可知lastRet保存的是最后一次调用next后保留的那个位置
