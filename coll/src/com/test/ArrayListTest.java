@@ -35,6 +35,20 @@ public class ArrayListTest extends TestCase {
 	}	
 	
 	/**
+	 * 因为arraylist的数组默认大小是10，测试超过10时，list的长度是否增加到10*1.5；
+	 */
+	public void testAddCapacity(){
+		ArrayList<User> list=new ArrayList<User>();
+		for(int i=0;i<11;i++){
+			User u=new User("yy"+i, String.valueOf(i));
+			list.add(u);
+		}
+		
+		assertEquals(true, list.getCapacity()==10*1.5);
+	}
+	
+	
+	/**
 	 * 测试删除指定位置的元素，其中也可以测试是否在index超出范围时候是否抛出异常
 	 */
 	public void testRemove(){
@@ -46,6 +60,14 @@ public class ArrayListTest extends TestCase {
 //		assertEquals(false, list.remove(3));
 	}
 	
+	/**
+	 * 测试clear清除函数
+	 */
+	public void testClear(){
+		List<User> list=getList();
+		list.clear();
+		assertEquals(true, list.size()==0);
+	}
 	
 	
 }

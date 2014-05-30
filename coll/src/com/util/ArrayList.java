@@ -22,6 +22,14 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,
 		this(10);
 
 	}
+	
+	/**
+	 * 获取数组的容量 ，这个是@author yiting 添加的函数
+	 * @return
+	 */
+	public int getCapacity(){
+		return elementData.length;
+	}
 
 	public ArrayList(int initCapacity) {
 		super();
@@ -68,7 +76,7 @@ public class ArrayList<E> extends AbstractList<E> implements RandomAccess,
 
 	private void grow(int minCapacity) {
 		int oldCapacity = elementData.length;
-		int newCapacity = oldCapacity + oldCapacity >> 1;
+		int newCapacity = oldCapacity + (oldCapacity >>1);
 		if (newCapacity - minCapacity < 0) {
 			newCapacity = minCapacity;
 		}
