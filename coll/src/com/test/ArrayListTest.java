@@ -41,9 +41,11 @@ public class ArrayListTest extends TestCase {
 		ArrayList<User> list=new ArrayList<User>();
 		for(int i=0;i<11;i++){
 			User u=new User("yy"+i, String.valueOf(i));
+			//初始时modCount是0，每次发生结构性的变化modcount都会+1，这里测试modCount的变化正确性
+			assertEquals(true, list.getModCount()==i);
 			list.add(u);
 		}
-		
+		//测试容量变化
 		assertEquals(true, list.getCapacity()==10*1.5);
 	}
 	
