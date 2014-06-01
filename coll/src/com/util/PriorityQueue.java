@@ -1,6 +1,11 @@
 package com.util;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.ConcurrentModificationException;
+import java.util.NoSuchElementException;
+
+
 
 
 /**
@@ -314,7 +319,7 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements java.io.Serial
 			if(exceptedModCount != modCount)
 				throw new ConcurrentModificationException();
 			if(lastRet != -1){
-				E moved = priorityQueue.this.removeAt(lastRet);
+				E moved = PriorityQueue.this.removeAt(lastRet);
 				lastRet = -1;
 				if(moved == null)
 					cursor--;
